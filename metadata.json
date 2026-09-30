@@ -1,0 +1,6 @@
+{
+  "name": "MediTrack Analytics",
+  "description": "Hospital and pharmacy medicine inventory analytics, stockout risk prediction, excess stock identification, expiry wastage monitoring, and demand forecasting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
