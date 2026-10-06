@@ -9,7 +9,10 @@ import {
   TrendingUp,
   ShieldAlert,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Sliders,
+  Sparkles,
+  Download
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -29,6 +32,7 @@ import {
 import { MedicineAnalytics, BatchExpiryDetail, CriticalAlert, RawDataset } from '../../types/inventory';
 import { MetricTooltip } from '../common/MetricTooltip';
 import { PageId } from '../layout/Sidebar';
+import { DataTable, Column } from '../common/DataTable';
 
 interface OverviewPageProps {
   analytics: {
@@ -48,6 +52,9 @@ interface OverviewPageProps {
   };
   rawDataset: RawDataset;
   onNavigate: (page: PageId) => void;
+  onSelectMedicine?: (med: MedicineAnalytics) => void;
+  onOpenSimulator?: () => void;
+  facilityType?: 'hospital' | 'clinic' | 'pharmacy';
 }
 
 const CATEGORY_COLORS = ['#0d9488', '#0284c7', '#6366f1', '#8b5cf6', '#ec4899', '#f97316', '#eab308', '#10b981'];
@@ -55,7 +62,10 @@ const CATEGORY_COLORS = ['#0d9488', '#0284c7', '#6366f1', '#8b5cf6', '#ec4899', 
 export const OverviewPage: React.FC<OverviewPageProps> = ({
   analytics,
   rawDataset,
-  onNavigate
+  onNavigate,
+  onSelectMedicine,
+  onOpenSimulator,
+  facilityType = 'hospital'
 }) => {
   const { kpis, criticalAlerts, medicineAnalytics, batchExpiryDetails } = analytics;
 
@@ -154,11 +164,64 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
+      {/* 4-Step Decision Flow Banner */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="font-bold text-slate-700 dark:text-slate-300 mr-1.5">Decision Flow:</span>
+          <button
+            type="button"
+            onClick={() => onNavigate('upload')}
+            className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer"
+          >
+            1. Upload Data
+          </button>
+          <span className="text-slate-400">→</span>
+          <button
+            type="button"
+            onClick={() => onNavigate('overview')}
+            className="px-2.5 py-1 rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-bold border border-teal-200 dark:border-teal-800 transition-colors cursor-pointer"
+          >
+            2. Overview & Analysis
+          </button>
+          <span className="text-slate-400">→</span>
+          <button
+            type="button"
+            onClick={() => onNavigate('recommendations')}
+            className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer flex items-center gap-1"
+          >
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span>3. Smart Recommendations</span>
+          </button>
+          <span className="text-slate-400">→</span>
+          <button
+            type="button"
+            onClick={() => onNavigate('reports')}
+            className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors cursor-pointer flex items-center gap-1"
+          >
+            <Download className="w-3 h-3 text-slate-500" />
+            <span>4. Download Reports</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {onOpenSimulator && (
+            <button
+              type="button"
+              onClick={onOpenSimulator}
+              className="inline-flex items-center gap-1.5 px-3 py-1 font-semibold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800/80 hover:bg-teal-100 dark:hover:bg-teal-900/40 rounded-md transition-colors cursor-pointer text-xs"
+            >
+              <Sliders className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+              <span>Scenario Sandbox</span>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Page Title & Scope */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Hospital Medicine Inventory Overview
+            {facilityType === 'hospital' ? 'Hospital' : facilityType === 'clinic' ? 'Clinic' : 'Pharmacy'} Medicine Inventory Overview
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Holistic monitoring of stock availability, consumption velocity, shortage indicators, and expiry risks.
@@ -166,7 +229,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-md font-medium">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-md font-medium">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>Audit Engine Active</span>
           </span>
@@ -380,18 +443,32 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
 
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
                 <span className="font-medium text-slate-700 dark:text-slate-200">{alert.actionText}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (alert.targetModule === 'Shortage Risk') onNavigate('shortage');
-                    else if (alert.targetModule === 'Expiry & Wastage') onNavigate('expiry');
-                    else if (alert.targetModule === 'Excess Inventory') onNavigate('excess');
-                  }}
-                  className="inline-flex items-center gap-1 text-teal-700 dark:text-teal-400 font-semibold hover:underline cursor-pointer"
-                >
-                  <span>Resolve</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {alert.medicine_id && onSelectMedicine && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const med = medicineAnalytics.find(m => m.medicine_id === alert.medicine_id);
+                        if (med) onSelectMedicine(med);
+                      }}
+                      className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 underline cursor-pointer"
+                    >
+                      Inspect SKU
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (alert.targetModule === 'Shortage Risk') onNavigate('shortage');
+                      else if (alert.targetModule === 'Expiry & Wastage') onNavigate('expiry');
+                      else if (alert.targetModule === 'Excess Inventory') onNavigate('excess');
+                    }}
+                    className="inline-flex items-center gap-1 text-teal-700 dark:text-teal-400 font-semibold hover:underline cursor-pointer"
+                  >
+                    <span>Resolve</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -617,6 +694,128 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
+
+      {/* Interactive Medicine Inventory Drill-down & Shortage Status */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+              Quick Medicine Inventory Drill-down & Shortage Status
+            </h2>
+            <p className="text-[11px] text-slate-500">
+              Click any medicine row to instantly inspect its batch lots, expiry timeline, days of cover, and simulated replenishment actions.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('shortage')}
+            className="text-xs text-rose-600 dark:text-rose-400 font-medium hover:underline inline-flex items-center gap-1 cursor-pointer"
+          >
+            <span>Full Shortage Monitor</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+
+        <DataTable
+          data={medicineAnalytics}
+          columns={[
+            {
+              key: 'name',
+              header: 'Medicine SKU',
+              render: (row) => (
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>{row.name}</span>
+                    {row.shortage_risk_level === 'High' && (
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping inline-block" title="Imminent Stockout Risk" />
+                    )}
+                  </div>
+                  <div className="text-[10px] font-mono text-slate-400">
+                    {row.medicine_id} · Unit Cost: ₹{row.unit_cost}
+                  </div>
+                </div>
+              )
+            },
+            { key: 'category', header: 'Category' },
+            {
+              key: 'criticality',
+              header: 'Criticality',
+              align: 'center',
+              render: (row) => (
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    row.criticality === 'Vital'
+                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                      : row.criticality === 'Essential'
+                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                      : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {row.criticality}
+                </span>
+              )
+            },
+            {
+              key: 'total_stock',
+              header: 'Stock vs ROP',
+              align: 'right',
+              render: (row) => (
+                <span className={`font-mono font-semibold ${row.total_stock <= row.reorder_level ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                  {row.total_stock.toLocaleString()} / {row.reorder_level.toLocaleString()}
+                </span>
+              )
+            },
+            {
+              key: 'days_of_stock_cover',
+              header: 'Cover / Lead Time',
+              align: 'right',
+              render: (row) => (
+                <span className={`font-mono ${row.days_of_stock_cover <= row.lead_time_days ? 'text-rose-600 font-bold' : 'text-slate-600 dark:text-slate-400'}`}>
+                  {Math.round(row.days_of_stock_cover)}d / {row.lead_time_days}d
+                </span>
+              )
+            },
+            {
+              key: 'shortage_risk_score',
+              header: 'Risk Score',
+              align: 'center',
+              render: (row) => {
+                const color =
+                  row.shortage_risk_level === 'High'
+                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'
+                    : row.shortage_risk_level === 'Medium'
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300';
+                return (
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${color}`}>
+                    {row.shortage_risk_score}/100
+                  </span>
+                );
+              }
+            },
+            {
+              key: 'actions',
+              header: 'Details',
+              align: 'center',
+              render: (row) => (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectMedicine?.(row);
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 border border-teal-200 dark:border-teal-800 rounded transition-colors cursor-pointer"
+                >
+                  Inspect SKU
+                </button>
+              )
+            }
+          ]}
+          searchPlaceholder="Search 60 medicines by name, ID, category..."
+          exportFilename="overview_medicines_inventory_register"
+          onRowClick={onSelectMedicine}
+        />
       </div>
     </div>
   );

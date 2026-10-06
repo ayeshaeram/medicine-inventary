@@ -18,7 +18,8 @@ interface ShortageRiskPageProps {
 }
 
 export const ShortageRiskPage: React.FC<ShortageRiskPageProps> = ({
-  medicineAnalytics
+  medicineAnalytics,
+  onOrderClick
 }) => {
   const [riskFilter, setRiskFilter] = useState<'all' | 'High' | 'Medium' | 'Low'>('all');
   const [criticalityFilter, setCriticalityFilter] = useState<'all' | 'Vital' | 'Essential' | 'Desirable'>('all');
@@ -140,6 +141,25 @@ export const ShortageRiskPage: React.FC<ShortageRiskPageProps> = ({
         <span className="font-bold text-teal-700 dark:text-teal-400 font-mono">
           {row.suggested_order_qty > 0 ? `${row.suggested_order_qty.toLocaleString()} units` : 'Adequate'}
         </span>
+      )
+    },
+    {
+      key: 'actions',
+      header: 'Action',
+      align: 'center',
+      render: (row) => (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOrderClick?.(row);
+          }}
+          className="px-2.5 py-1 text-[11px] font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded transition-colors cursor-pointer inline-flex items-center gap-1 shadow-xs"
+          title="Open Clinical Order & Lot Drawer"
+        >
+          <ShoppingCart className="w-3 h-3" />
+          <span>Replenish</span>
+        </button>
       )
     }
   ];
@@ -288,6 +308,7 @@ export const ShortageRiskPage: React.FC<ShortageRiskPageProps> = ({
           columns={columns}
           searchPlaceholder="Search medicine, category..."
           exportFilename="depleted_medicines_shortage_risk"
+          onRowClick={onOrderClick}
         />
       </div>
     </div>

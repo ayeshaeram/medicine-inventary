@@ -23,10 +23,12 @@ import { MetricTooltip } from '../common/MetricTooltip';
 
 interface ExcessInventoryPageProps {
   medicineAnalytics: MedicineAnalytics[];
+  onSelectMedicine?: (med: MedicineAnalytics) => void;
 }
 
 export const ExcessInventoryPage: React.FC<ExcessInventoryPageProps> = ({
-  medicineAnalytics
+  medicineAnalytics,
+  onSelectMedicine
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'overstocked' | 'dead_stock'>('all');
 
@@ -293,6 +295,7 @@ export const ExcessInventoryPage: React.FC<ExcessInventoryPageProps> = ({
           columns={columns}
           searchPlaceholder="Search surplus medicines..."
           exportFilename="excess_inventory_register"
+          onRowClick={onSelectMedicine}
         />
       </div>
     </div>

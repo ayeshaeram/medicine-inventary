@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowUpDown, ChevronLeft, ChevronRight, Download, Search } from 'lucide-react';
-import { exportToCSV } from '../../utils/csvParser';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Download, Search, FileSpreadsheet } from 'lucide-react';
+import { exportToCSV, exportToExcel } from '../../utils/csvParser';
 
 export interface Column<T> {
   key: string;
@@ -20,6 +20,7 @@ interface DataTableProps<T> {
   initialSortDirection?: 'asc' | 'desc';
   pageSizeOptions?: number[];
   filterRender?: React.ReactNode;
+  onRowClick?: (row: T) => void;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -30,7 +31,8 @@ export function DataTable<T extends Record<string, any>>({
   initialSortKey,
   initialSortDirection = 'asc',
   pageSizeOptions = [10, 25, 50],
-  filterRender
+  filterRender,
+  onRowClick
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<string | undefined>(initialSortKey);
@@ -89,8 +91,12 @@ export function DataTable<T extends Record<string, any>>({
     }
   };
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     exportToCSV(sortedData, exportFilename);
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(sortedData, exportFilename);
   };
 
   return (
@@ -113,16 +119,26 @@ export function DataTable<T extends Record<string, any>>({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {filterRender}
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
-            title="Download visible table as CSV"
-          >
-            <Download className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-            <span>Export CSV</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+              title="Download visible table as CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+              title="Download visible table as Excel (.xlsx)"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Excel</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -154,7 +170,12 @@ export function DataTable<T extends Record<string, any>>({
               paginatedData.map((row, rowIdx) => (
                 <tr
                   key={rowIdx}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                  onClick={() => onRowClick?.(row)}
+                  className={`transition-colors ${
+                    onRowClick
+                      ? 'hover:bg-teal-50/70 dark:hover:bg-teal-950/40 cursor-pointer'
+                      : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                  }`}
                 >
                   {columns.map(col => (
                     <td

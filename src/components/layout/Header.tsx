@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Moon, Sun, RefreshCw, Bell, AlertTriangle, Clock, ArrowRight, X, Sparkles, LogOut, User } from 'lucide-react';
+import { FileText, Moon, Sun, RefreshCw, Bell, AlertTriangle, Clock, ArrowRight, X, Sparkles, LogOut, User, Building } from 'lucide-react';
 import { OPERATIONAL_DATE } from '../../utils/analyticsEngine';
 import { CriticalAlert } from '../../types/inventory';
 import { PageId } from './Sidebar';
@@ -18,6 +18,8 @@ interface HeaderProps {
   currentUser: UserSession | null;
   onSignOut: () => void;
   onOpenAuthModal: () => void;
+  facilityType?: 'hospital' | 'clinic' | 'pharmacy';
+  onFacilityTypeChange?: (type: 'hospital' | 'clinic' | 'pharmacy') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,7 +34,9 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleAIInsights,
   currentUser,
   onSignOut,
-  onOpenAuthModal
+  onOpenAuthModal,
+  facilityType = 'hospital',
+  onFacilityTypeChange
 }) => {
   const [showAlertsDropdown, setShowAlertsDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -71,11 +75,22 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="hidden lg:flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
         <span>Cycle: <strong className="font-mono text-slate-700 dark:text-slate-300">{OPERATIONAL_DATE}</strong></span>
         <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">·</span>
-        <span>Active Catalog: <strong className="font-mono text-slate-700 dark:text-slate-300">{totalMedicinesCount} Items</strong></span>
+        <span>Catalog: <strong className="font-mono text-slate-700 dark:text-slate-300">{totalMedicinesCount} SKUs</strong></span>
         <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">·</span>
         <span>Currency: <strong className="font-mono text-teal-600 dark:text-teal-400 font-semibold">INR (₹)</strong></span>
         <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">·</span>
-        <span>Hospital Units: <span className="text-slate-700 dark:text-slate-300">OPD / ICU / ER / Pharmacy</span></span>
+        <div className="flex items-center gap-1.5">
+          <Building className="w-3.5 h-3.5 text-slate-400" />
+          <select
+            value={facilityType}
+            onChange={(e) => onFacilityTypeChange?.(e.target.value as any)}
+            className="bg-transparent border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 text-xs font-semibold text-teal-700 dark:text-teal-300 focus:outline-none cursor-pointer"
+          >
+            <option value="hospital" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Hospital (Inpatient/ICU)</option>
+            <option value="clinic" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Outpatient Clinic</option>
+            <option value="pharmacy" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Pharmacy & Dispensary</option>
+          </select>
+        </div>
       </div>
 
       {/* Zone 3: Actions + Notification Bell Button */}

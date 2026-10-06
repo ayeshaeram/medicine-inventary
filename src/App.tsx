@@ -28,6 +28,8 @@ import { ProcurementPage } from './components/pages/ProcurementPage';
 import { ForecastPage } from './components/pages/ForecastPage';
 import { DataUploadPage } from './components/pages/DataUploadPage';
 import { HowItWorksPage } from './components/pages/HowItWorksPage';
+import { SmartRecommendationsPage } from './components/pages/SmartRecommendationsPage';
+import { ReportsDownloadPage } from './components/pages/ReportsDownloadPage';
 
 const INITIAL_FILTERS: GlobalFilterState = {
   dateRange: '365d',
@@ -72,10 +74,10 @@ export default function App() {
   });
 
   // Save auth user
-  const handleLogin = (user: UserSession) => {
+  const handleLogin = (user: UserSession, targetPage: PageId = 'overview') => {
     setCurrentUser(user);
     saveActiveUserSession(user);
-    setCurrentPage('overview');
+    setCurrentPage(targetPage);
   };
 
   const handleSignOut = () => {
@@ -96,6 +98,9 @@ export default function App() {
 
   // Global Toast Banner
   const [appToast, setAppToast] = useState<string | null>(null);
+
+  // Facility Scope state (Hospital, Clinic, or Pharmacy)
+  const [facilityType, setFacilityType] = useState<'hospital' | 'clinic' | 'pharmacy'>('hospital');
 
   // Initial Data Generation & Validation
   const [rawDataset, setRawDataset] = useState<RawDataset>(() => {
@@ -238,6 +243,8 @@ export default function App() {
         rawDataset={rawDataset}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(prev => !prev)}
+        onNavigateToUpload={() => handleLogin(currentUser || DEMO_USERS[0], 'upload')}
+        onNavigate={(page) => handleLogin(currentUser || DEMO_USERS[0], page)}
       />
     );
   }
@@ -258,6 +265,8 @@ export default function App() {
         currentUser={currentUser}
         onSignOut={handleSignOut}
         onOpenAuthModal={() => setCurrentPage('home')}
+        facilityType={facilityType}
+        onFacilityTypeChange={setFacilityType}
       />
 
       {/* Global Simulation Alert Banner if Active */}
@@ -319,6 +328,27 @@ export default function App() {
                 analytics={analytics}
                 rawDataset={activeDataset}
                 onNavigate={setCurrentPage}
+                onSelectMedicine={(med) => setSelectedMedForDetail(med)}
+                onOpenSimulator={() => setIsSimulatorOpen(true)}
+                facilityType={facilityType}
+              />
+            )}
+
+            {currentPage === 'recommendations' && (
+              <SmartRecommendationsPage
+                medicineAnalytics={analytics.medicineAnalytics}
+                batchExpiryDetails={analytics.batchExpiryDetails}
+                criticalAlerts={analytics.criticalAlerts}
+                onSelectMedicine={(med) => setSelectedMedForDetail(med)}
+                facilityType={facilityType}
+              />
+            )}
+
+            {currentPage === 'reports' && (
+              <ReportsDownloadPage
+                analytics={analytics}
+                rawDataset={activeDataset}
+                facilityType={facilityType}
               />
             )}
 
@@ -326,18 +356,21 @@ export default function App() {
               <UsageTrendsPage
                 medicineAnalytics={analytics.medicineAnalytics}
                 rawDataset={activeDataset}
+                onSelectMedicine={(med) => setSelectedMedForDetail(med)}
               />
             )}
 
             {currentPage === 'shortage' && (
               <ShortageRiskPage
                 medicineAnalytics={analytics.medicineAnalytics}
+                onOrderClick={(med) => setSelectedMedForDetail(med)}
               />
             )}
 
             {currentPage === 'excess' && (
               <ExcessInventoryPage
                 medicineAnalytics={analytics.medicineAnalytics}
+                onSelectMedicine={(med) => setSelectedMedForDetail(med)}
               />
             )}
 
@@ -345,6 +378,10 @@ export default function App() {
               <ExpiryWastagePage
                 batchExpiryDetails={analytics.batchExpiryDetails}
                 totalStockValue={analytics.kpis.totalStockValue}
+                onSelectMedicineById={(medId) => {
+                  const found = analytics.medicineAnalytics.find(m => m.medicine_id === medId);
+                  if (found) setSelectedMedForDetail(found);
+                }}
               />
             )}
 
@@ -360,6 +397,7 @@ export default function App() {
               <ForecastPage
                 medicineAnalytics={analytics.medicineAnalytics}
                 rawDataset={activeDataset}
+                onSelectMedicine={(med) => setSelectedMedForDetail(med)}
               />
             )}
 
@@ -371,6 +409,7 @@ export default function App() {
                   setRawDataset(newDataset);
                   setQualityReport(newReport);
                 }}
+                onNavigate={setCurrentPage}
               />
             )}
 

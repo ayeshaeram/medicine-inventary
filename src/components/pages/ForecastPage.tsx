@@ -28,11 +28,13 @@ import { computeLinearRegression, calculateMAPE, OPERATIONAL_DATE } from '../../
 interface ForecastPageProps {
   medicineAnalytics: MedicineAnalytics[];
   rawDataset: RawDataset;
+  onSelectMedicine?: (med: MedicineAnalytics) => void;
 }
 
 export const ForecastPage: React.FC<ForecastPageProps> = ({
   medicineAnalytics,
-  rawDataset
+  rawDataset,
+  onSelectMedicine
 }) => {
   const [forecastMethod, setForecastMethod] = useState<'moving_average' | 'linear_regression'>('moving_average');
   const [selectedMedId, setSelectedMedId] = useState<string>(
@@ -392,6 +394,7 @@ export const ForecastPage: React.FC<ForecastPageProps> = ({
           columns={recommendationColumns}
           searchPlaceholder="Search medicine, category..."
           exportFilename="procurement_reorder_schedule"
+          onRowClick={onSelectMedicine}
         />
       </div>
     </div>

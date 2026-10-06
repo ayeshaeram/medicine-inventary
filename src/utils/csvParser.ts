@@ -1,3 +1,4 @@
+import * as XLSX from 'xlsx';
 import {
   Medicine,
   StockBatch,
@@ -456,3 +457,116 @@ export const CSV_TEMPLATES = {
   procurement: 'order_id,order_date,medicine_id,quantity_ordered,supplier,delivery_date,unit_price\nPO-1001,2026-08-10,MED-001,1000,Apex BioPharma,2026-08-17,14.2\nPO-1002,2026-08-15,MED-002,3000,MedSupply Global,2026-08-19,3.1',
   demand: 'date,medicine_id,quantity_requested,department\n2026-09-28,MED-001,50,ICU\n2026-09-28,MED-002,120,OPD'
 };
+
+// Universal file parser: parses CSV or Excel (.xlsx, .xls) to string records
+export async function parseSpreadsheetFile(file: File): Promise<Record<string, string>[]> {
+  const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ||
+    file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    file.type === 'application/vnd.ms-excel';
+
+  if (isExcel) {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const firstSheetName = workbook.SheetNames[0];
+    if (!firstSheetName) return [];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const rawRows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, { raw: false, defval: '' });
+    return rawRows.map(row => {
+      const stringified: Record<string, string> = {};
+      Object.entries(row).forEach(([k, v]) => {
+        stringified[k.trim()] = String(v ?? '').trim();
+      });
+      return stringified;
+    });
+  } else {
+    // CSV / TSV text file
+    const text = await file.text();
+    return parseCSV(text);
+  }
+}
+
+// Parse multi-sheet master Excel file containing up to all 5 tables in separate sheets
+export async function parseWorkbookMaster(file: File): Promise<{
+  data: Partial<RawDataset>;
+  sheetsFound: string[];
+}> {
+  const arrayBuffer = await file.arrayBuffer();
+  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+  const result: Partial<RawDataset> = {};
+  const sheetsFound: string[] = [];
+
+  const normalizeSheetName = (name: string) => name.toLowerCase().replace(/[^a-z]/g, '');
+
+  workbook.SheetNames.forEach(sheetName => {
+    const cleanName = normalizeSheetName(sheetName);
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, { raw: false, defval: '' });
+    const rows = rawRows.map(row => {
+      const stringified: Record<string, string> = {};
+      Object.entries(row).forEach(([k, v]) => {
+        stringified[k.trim()] = String(v ?? '').trim();
+      });
+      return stringified;
+    });
+
+    if (cleanName.includes('medicine') || cleanName.includes('catalog') || cleanName === 'meds') {
+      result.medicines = rows as any;
+      sheetsFound.push(`${sheetName} → Medicines (${rows.length} rows)`);
+    } else if (cleanName.includes('stock') || cleanName.includes('batch') || cleanName.includes('lot')) {
+      result.stock = rows as any;
+      sheetsFound.push(`${sheetName} → Stock Batches (${rows.length} rows)`);
+    } else if (cleanName.includes('consum') || cleanName.includes('usage') || cleanName.includes('dispens')) {
+      result.consumption = rows as any;
+      sheetsFound.push(`${sheetName} → Consumption (${rows.length} rows)`);
+    } else if (cleanName.includes('procur') || cleanName.includes('order') || cleanName.includes('purchase') || cleanName.includes('po')) {
+      result.procurement = rows as any;
+      sheetsFound.push(`${sheetName} → Procurement (${rows.length} rows)`);
+    } else if (cleanName.includes('demand') || cleanName.includes('request') || cleanName.includes('prescript')) {
+      result.demand = rows as any;
+      sheetsFound.push(`${sheetName} → Demand (${rows.length} rows)`);
+    }
+  });
+
+  return { data: result, sheetsFound };
+}
+
+// Export dataset array to real Excel (.xlsx) file
+export function exportToExcel<T extends Record<string, any>>(data: T[], filename: string, sheetName = 'Sheet1') {
+  if (!data || data.length === 0) return;
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.writeFile(workbook, `${filename}.xlsx`);
+}
+
+// Download Master Excel Template (.xlsx) with all 5 tabs pre-created
+export function downloadMasterExcelTemplate() {
+  const workbook = XLSX.utils.book_new();
+
+  const templateMap: Record<string, string> = {
+    Medicines: CSV_TEMPLATES.medicines,
+    Stock_Batches: CSV_TEMPLATES.stock,
+    Consumption: CSV_TEMPLATES.consumption,
+    Procurement: CSV_TEMPLATES.procurement,
+    Demand: CSV_TEMPLATES.demand
+  };
+
+  Object.entries(templateMap).forEach(([tabName, csvString]) => {
+    const rows = parseCSV(csvString);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, tabName);
+  });
+
+  XLSX.writeFile(workbook, 'MediTrack_Master_Inventory_Template.xlsx');
+}
+
+// Download single table template as Excel (.xlsx)
+export function downloadExcelTemplate(tableKey: keyof typeof CSV_TEMPLATES) {
+  const csvString = CSV_TEMPLATES[tableKey];
+  const rows = parseCSV(csvString);
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  const title = tableKey.charAt(0).toUpperCase() + tableKey.slice(1);
+  XLSX.utils.book_append_sheet(workbook, worksheet, title);
+  XLSX.writeFile(workbook, `meditrack_template_${tableKey}.xlsx`);
+}

@@ -11,19 +11,23 @@ import {
   UploadCloud,
   BookOpen,
   Bell,
-  Sliders
+  Sliders,
+  Sparkles,
+  Download
 } from 'lucide-react';
 
 export type PageId =
   | 'home'
+  | 'upload'
   | 'overview'
-  | 'usage'
+  | 'recommendations'
   | 'shortage'
-  | 'excess'
   | 'expiry'
+  | 'excess'
+  | 'usage'
   | 'procurement'
   | 'forecast'
-  | 'upload'
+  | 'reports'
   | 'docs';
 
 interface NavItem {
@@ -33,6 +37,7 @@ interface NavItem {
   badgeCount?: number;
   badgeType?: 'stockout' | 'expiry' | 'general';
   badgeTitle?: string;
+  isStep?: boolean;
 }
 
 interface SidebarProps {
@@ -55,39 +60,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems: NavItem[] = [
     {
       id: 'home',
-      label: 'Hospital Portal Home',
+      label: 'Portal Home',
       icon: Home
     },
     {
+      id: 'upload',
+      label: '1. Upload Data (CSV/XLSX)',
+      icon: UploadCloud,
+      isStep: true
+    },
+    {
       id: 'overview',
-      label: 'Overview',
+      label: '2. Overview & Analytics',
       icon: LayoutDashboard,
       badgeCount: totalAlerts > 0 ? totalAlerts : undefined,
       badgeType: 'general',
-      badgeTitle: `${totalAlerts} total active inventory alerts`
+      badgeTitle: `${totalAlerts} total active inventory alerts`,
+      isStep: true
     },
-    { id: 'usage', label: 'Usage Trends', icon: TrendingUp },
+    {
+      id: 'recommendations',
+      label: '3. Smart Recommendations',
+      icon: Sparkles,
+      badgeCount: criticalAlertsCount,
+      badgeType: 'stockout',
+      badgeTitle: `${criticalAlertsCount} critical interventions`,
+      isStep: true
+    },
+    {
+      id: 'reports',
+      label: '4. Download Reports (PDF/Excel)',
+      icon: Download,
+      isStep: true
+    },
     {
       id: 'shortage',
-      label: 'Shortage Risk',
+      label: 'Shortage Risk & Depletion',
       icon: AlertTriangle,
       badgeCount: criticalAlertsCount > 0 ? criticalAlertsCount : undefined,
       badgeType: 'stockout',
       badgeTitle: `${criticalAlertsCount} critical stockout risks detected`
     },
-    { id: 'excess', label: 'Excess Inventory', icon: Boxes },
     {
       id: 'expiry',
-      label: 'Expiry & Wastage',
+      label: 'Expiry & Wastage (FEFO)',
       icon: Clock,
       badgeCount: nearExpiryCount > 0 ? nearExpiryCount : undefined,
       badgeType: 'expiry',
       badgeTitle: `${nearExpiryCount} batches expiring within 30 days`
     },
-    { id: 'procurement', label: 'Procurement', icon: Truck },
+    { id: 'excess', label: 'Excess & Dead Stock', icon: Boxes },
+    { id: 'usage', label: 'Usage Trends & ADC', icon: TrendingUp },
+    { id: 'procurement', label: 'Procurement & Vendors', icon: Truck },
     { id: 'forecast', label: 'Forecast & Orders', icon: LineChart },
-    { id: 'upload', label: 'Data Upload & Quality', icon: UploadCloud },
-    { id: 'docs', label: 'How It Works', icon: BookOpen }
+    { id: 'docs', label: 'Problem & Methodology', icon: BookOpen }
   ];
 
   return (

@@ -53,8 +53,14 @@ export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
     : 100;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-xs flex flex-col max-h-[90vh]">
+    <div
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 cursor-pointer"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-xs flex flex-col max-h-[90vh] cursor-default"
+        onClick={e => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-800/60">
           <div className="flex items-center gap-2.5">
@@ -126,43 +132,72 @@ export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
 
           {/* Active Batches */}
           <div>
-            <h3 className="font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 text-[10px] mb-2">
-              Physical Batch Lots ({medBatches.length} active lots on shelf)
-            </h3>
-            <div className="space-y-2">
-              {medBatches.map(b => (
-                <div
-                  key={b.batch_no}
-                  className="p-3 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-850 flex items-center justify-between gap-3"
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 text-[10px]">
+                Physical Batch Lots ({medBatches.length} active lots on shelf)
+              </h3>
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <span className="text-slate-500 text-[10px]">Transfer Target:</span>
+                <select
+                  value={selectedDept}
+                  onChange={e => setSelectedDept(e.target.value)}
+                  className="px-2 py-0.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200 text-[10px] focus:outline-none focus:ring-1 focus:ring-teal-500"
                 >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 dark:text-slate-200">{b.batch_no}</span>
-                      <span className="text-[10px] font-mono text-slate-400">({b.storage_location})</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      <span>Qty: <strong className="text-slate-800 dark:text-slate-200">{b.quantity_on_hand}</strong></span>
-                      <span className="mx-1">·</span>
-                      <span>Expires: <strong className="font-mono">{b.expiry_date}</strong></span>
-                      <span className="mx-1">·</span>
-                      <span className={b.days_to_expiry <= 30 ? 'text-rose-600 font-bold' : ''}>
-                        {b.days_to_expiry <= 0 ? 'Expired' : `${b.days_to_expiry} days left`}
-                      </span>
-                    </div>
-                  </div>
+                  <option value="ICU Satellite Cabinet">ICU Satellite Cabinet</option>
+                  <option value="Emergency Trauma Bay">Emergency Trauma Bay</option>
+                  <option value="Outpatient Pharmacy">Outpatient Pharmacy</option>
+                  <option value="Central Warehouse">Central Warehouse</option>
+                  <option value="Inpatient General Ward">Inpatient General Ward</option>
+                </select>
+              </div>
+            </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleTransfer(b.batch_no)}
-                      className="px-2.5 py-1 text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 rounded hover:bg-teal-100 transition-colors cursor-pointer flex items-center gap-1"
-                    >
-                      <ArrowRightLeft className="w-3 h-3" />
-                      <span>Transfer</span>
-                    </button>
+            <div className="space-y-2">
+              {medBatches.length > 0 ? (
+                medBatches.map(b => (
+                  <div
+                    key={b.batch_no}
+                    className="p-3 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-850 flex items-center justify-between gap-3"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{b.batch_no}</span>
+                        <span className="text-[10px] font-mono text-slate-400">({b.storage_location})</span>
+                        {b.is_fefo_vulnerable && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-medium">
+                            FEFO Vulnerable
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        <span>Qty: <strong className="text-slate-800 dark:text-slate-200">{b.quantity_on_hand}</strong></span>
+                        <span className="mx-1">·</span>
+                        <span>Expires: <strong className="font-mono">{b.expiry_date}</strong></span>
+                        <span className="mx-1">·</span>
+                        <span className={b.days_to_expiry <= 30 ? 'text-rose-600 font-bold' : ''}>
+                          {b.days_to_expiry <= 0 ? 'Expired' : `${b.days_to_expiry} days left`}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTransfer(b.batch_no)}
+                        title={`Transfer lot to ${selectedDept}`}
+                        className="px-2.5 py-1 text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 rounded hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <ArrowRightLeft className="w-3 h-3" />
+                        <span>Transfer to {selectedDept.split(' ')[0]}</span>
+                      </button>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="p-3 text-center text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span>Standard inventory pool · No near-expiry lots flagged for this medicine.</span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -173,18 +208,21 @@ export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
               <span>Simulate Immediate Purchase Order</span>
             </h3>
             <p className="text-[11px] text-slate-500 mb-2">
-              Dispatch simulated electronic purchase order to replenish stock above reorder point.
+              Dispatch electronic replenishment order to contracted supplier ({medicine.lead_time_days} days lead time).
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <input
                 type="number"
                 min="10"
                 step="50"
                 value={orderQty}
-                onChange={e => setOrderQty(Number(e.target.value))}
-                className="w-32 px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200 font-mono text-xs focus:outline-none"
+                onChange={e => setOrderQty(Math.max(1, Number(e.target.value)))}
+                className="w-28 px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200 font-mono text-xs focus:outline-none"
               />
-              <span className="text-slate-500">units</span>
+              <span className="text-slate-500 text-xs">units</span>
+              <span className="text-slate-400 text-xs font-mono ml-2">
+                (Cost: ₹{Math.round(orderQty * medicine.unit_cost).toLocaleString('en-IN')})
+              </span>
               <button
                 type="button"
                 onClick={handleOrder}

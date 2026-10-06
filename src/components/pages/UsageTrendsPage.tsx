@@ -26,11 +26,13 @@ import { MetricTooltip } from '../common/MetricTooltip';
 interface UsageTrendsPageProps {
   medicineAnalytics: MedicineAnalytics[];
   rawDataset: RawDataset;
+  onSelectMedicine?: (med: MedicineAnalytics) => void;
 }
 
 export const UsageTrendsPage: React.FC<UsageTrendsPageProps> = ({
   medicineAnalytics,
-  rawDataset
+  rawDataset,
+  onSelectMedicine
 }) => {
   const [granularity, setGranularity] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -432,6 +434,7 @@ export const UsageTrendsPage: React.FC<UsageTrendsPageProps> = ({
               columns={movementColumns}
               searchPlaceholder="Filter segment medicines..."
               exportFilename={`matrix_${selectedMatrixCell.abc}${selectedMatrixCell.xyz}`}
+              onRowClick={onSelectMedicine}
             />
           </div>
         )}
@@ -448,6 +451,7 @@ export const UsageTrendsPage: React.FC<UsageTrendsPageProps> = ({
           columns={movementColumns}
           searchPlaceholder="Search fast moving items..."
           exportFilename="fast_moving_medicines"
+          onRowClick={onSelectMedicine}
         />
       </div>
 
@@ -462,6 +466,7 @@ export const UsageTrendsPage: React.FC<UsageTrendsPageProps> = ({
           columns={movementColumns}
           searchPlaceholder="Search slow moving items..."
           exportFilename="slow_moving_medicines"
+          onRowClick={onSelectMedicine}
         />
       </div>
     </div>

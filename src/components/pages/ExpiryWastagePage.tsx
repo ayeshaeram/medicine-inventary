@@ -25,11 +25,13 @@ import { MetricTooltip } from '../common/MetricTooltip';
 interface ExpiryWastagePageProps {
   batchExpiryDetails: BatchExpiryDetail[];
   totalStockValue: number;
+  onSelectMedicineById?: (medicineId: string) => void;
 }
 
 export const ExpiryWastagePage: React.FC<ExpiryWastagePageProps> = ({
   batchExpiryDetails,
-  totalStockValue
+  totalStockValue,
+  onSelectMedicineById
 }) => {
   const [bucketFilter, setBucketFilter] = useState<'all' | ExpiryBucket>('all');
   const [actionFilter, setActionFilter] = useState<string>('all');
@@ -341,6 +343,7 @@ export const ExpiryWastagePage: React.FC<ExpiryWastagePageProps> = ({
           columns={columns}
           searchPlaceholder="Search batch number, medicine..."
           exportFilename="batch_expiry_fefo_register"
+          onRowClick={(row) => onSelectMedicineById?.(row.medicine_id)}
         />
       </div>
     </div>
