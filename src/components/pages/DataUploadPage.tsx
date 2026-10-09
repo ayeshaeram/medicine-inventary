@@ -138,7 +138,7 @@ export const DataUploadPage: React.FC<DataUploadPageProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `meditrack_template_${tableKey}.csv`;
+    link.download = `smartmed_template_${tableKey}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

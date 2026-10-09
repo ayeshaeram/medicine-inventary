@@ -36,7 +36,7 @@ export function generateInventoryPDF(data: PDFReportData) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('MediTrack Analytics', 14, 12);
+  doc.text('Smart Med', 14, 12);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
@@ -181,9 +181,9 @@ export function generateInventoryPDF(data: PDFReportData) {
   // Footer
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184);
-  doc.text('Confidential - MediTrack Analytics Hospital Inventory Management System', 14, 287);
+  doc.text('Confidential - Smart Med Inventory Decision Support System', 14, 287);
   doc.text('Page 1 of 1', pageWidth - 30, 287);
 
   // Save PDF
-  doc.save(`MediTrack_Inventory_Report_${OPERATIONAL_DATE}.pdf`);
+  doc.save(`SmartMed_Inventory_Report_${OPERATIONAL_DATE}.pdf`);
 }

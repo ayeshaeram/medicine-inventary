@@ -239,12 +239,13 @@ export default function App() {
   if (currentPage === 'home') {
     return (
       <LandingPage
+        currentUser={currentUser}
         onLogin={handleLogin}
         rawDataset={rawDataset}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(prev => !prev)}
-        onNavigateToUpload={() => handleLogin(currentUser || DEMO_USERS[0], 'upload')}
-        onNavigate={(page) => handleLogin(currentUser || DEMO_USERS[0], page)}
+        onNavigateToUpload={() => setCurrentPage('upload')}
+        onNavigate={(page) => setCurrentPage(page)}
       />
     );
   }

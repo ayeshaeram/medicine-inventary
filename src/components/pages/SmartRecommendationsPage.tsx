@@ -182,7 +182,7 @@ export const SmartRecommendationsPage: React.FC<SmartRecommendationsPageProps> =
       Suggested_Action: r.suggestedAction,
       Financial_Impact: r.financialImpact
     }));
-    exportToCSV(exportData, 'meditrack_smart_recommendations');
+    exportToCSV(exportData, 'smartmed_smart_recommendations');
   };
 
   const handleExportExcel = () => {
@@ -195,7 +195,7 @@ export const SmartRecommendationsPage: React.FC<SmartRecommendationsPageProps> =
       Suggested_Action: r.suggestedAction,
       Financial_Impact: r.financialImpact
     }));
-    exportToExcel(exportData, 'meditrack_smart_recommendations', 'Recommendations');
+    exportToExcel(exportData, 'smartmed_smart_recommendations', 'Recommendations');
   };
 
   return (

@@ -557,7 +557,7 @@ export function downloadMasterExcelTemplate() {
     XLSX.utils.book_append_sheet(workbook, worksheet, tabName);
   });
 
-  XLSX.writeFile(workbook, 'MediTrack_Master_Inventory_Template.xlsx');
+  XLSX.writeFile(workbook, 'SmartMed_Master_Inventory_Template.xlsx');
 }
 
 // Download single table template as Excel (.xlsx)
@@ -568,5 +568,5 @@ export function downloadExcelTemplate(tableKey: keyof typeof CSV_TEMPLATES) {
   const workbook = XLSX.utils.book_new();
   const title = tableKey.charAt(0).toUpperCase() + tableKey.slice(1);
   XLSX.utils.book_append_sheet(workbook, worksheet, title);
-  XLSX.writeFile(workbook, `meditrack_template_${tableKey}.xlsx`);
+  XLSX.writeFile(workbook, `smartmed_template_${tableKey}.xlsx`);
 }

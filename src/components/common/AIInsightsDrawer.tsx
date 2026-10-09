@@ -326,7 +326,7 @@ export const AIInsightsDrawer: React.FC<AIInsightsDrawerProps> = ({
 
         {/* Drawer Footer */}
         <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900 flex items-center justify-between text-[11px] text-slate-500">
-          <span>MediTrack AI Engine</span>
+          <span>Smart Med AI Engine</span>
           <span className="font-mono text-[10px]">Gemini 3.8 Flash</span>
         </div>
       </aside>

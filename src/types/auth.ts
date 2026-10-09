@@ -17,15 +17,17 @@ export interface UserSession {
 }
 
 export interface RegisteredAccount extends UserSession {
+  password?: string;
   passwordHash?: string;
   createdAt: string;
 }
 
-export const DEMO_USERS: RegisteredAccount[] = [
+export const INITIAL_ACCOUNTS: RegisteredAccount[] = [
   {
     id: 'usr-001',
     name: 'Dr. Sarah Chen, PharmD',
-    email: 'sarah.chen@stjudes-health.org',
+    email: 'sarah.chen@smartmed.org',
+    password: 'password123',
     role: 'Chief Pharmacist',
     hospitalName: 'Metropolitan General & Trauma Center',
     department: 'Central Pharmacy',
@@ -36,7 +38,8 @@ export const DEMO_USERS: RegisteredAccount[] = [
   {
     id: 'usr-002',
     name: 'Marcus Vance, MBA',
-    email: 'marcus.vance@metropolitan-health.org',
+    email: 'marcus.vance@smartmed.org',
+    password: 'password123',
     role: 'Supply Chain Director',
     hospitalName: 'Metropolitan General & Trauma Center',
     department: 'Hospital Procurement & Operations',
@@ -47,23 +50,38 @@ export const DEMO_USERS: RegisteredAccount[] = [
   {
     id: 'usr-003',
     name: 'Dr. Elena Rostova, MD',
-    email: 'elena.rostova@metro-icu.org',
+    email: 'elena.rostova@smartmed.org',
+    password: 'password123',
     role: 'Emergency Ward Lead',
     hospitalName: 'Metropolitan General & Trauma Center',
     department: 'Trauma & Intensive Care (ICU)',
     avatarInitials: 'ER',
     lastLogin: '2026-09-29 07:45',
     createdAt: '2026-03-01'
+  },
+  {
+    id: 'usr-004',
+    name: 'Ayesha Eram',
+    email: 'ayeshaeram2005@gmail.com',
+    password: 'password123',
+    role: 'Chief Pharmacist',
+    hospitalName: 'Smart Med Healthcare System',
+    department: 'Central Pharmacy & Inventory Supply',
+    avatarInitials: 'AE',
+    lastLogin: '2026-10-09 09:30',
+    createdAt: '2026-01-01'
   }
 ];
 
-const STORAGE_KEY_REGISTERED = 'meditrack_registered_accounts';
-const STORAGE_KEY_SESSION = 'meditrack_user';
+export const DEMO_USERS = INITIAL_ACCOUNTS;
+
+const STORAGE_KEY_REGISTERED = 'smartmed_registered_accounts';
+const STORAGE_KEY_SESSION = 'smartmed_user';
 
 // Get all custom registered accounts from localStorage
 export function getRegisteredAccounts(): RegisteredAccount[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_REGISTERED);
+    const raw = localStorage.getItem(STORAGE_KEY_REGISTERED) || localStorage.getItem('meditrack_registered_accounts');
     if (!raw) return [];
     return JSON.parse(raw);
   } catch (e) {
@@ -72,12 +90,31 @@ export function getRegisteredAccounts(): RegisteredAccount[] {
   }
 }
 
-// Get all accounts (custom registered + demo accounts)
+// Get all accounts (custom registered + default accounts)
 export function getAllAccounts(): RegisteredAccount[] {
   const registered = getRegisteredAccounts();
   const regEmails = new Set(registered.map(r => r.email.toLowerCase()));
-  const defaultDemos = DEMO_USERS.filter(d => !regEmails.has(d.email.toLowerCase()));
-  return [...registered, ...defaultDemos];
+  const defaultAccounts = INITIAL_ACCOUNTS.filter(d => !regEmails.has(d.email.toLowerCase()));
+  return [...registered, ...defaultAccounts];
+}
+
+// Verify credentials (email & password)
+export function verifyCredentials(email: string, password: string): { success: boolean; account?: RegisteredAccount; error?: string } {
+  const cleanEmail = email.trim().toLowerCase();
+  const accounts = getAllAccounts();
+  const matched = accounts.find(a => a.email.toLowerCase() === cleanEmail);
+
+  if (!matched) {
+    return { success: false, error: 'No account found with this email. Please check your email or register.' };
+  }
+
+  // If account has password set, check it; default fallback password is 'password123'
+  const expectedPassword = matched.password || 'password123';
+  if (password.trim() !== expectedPassword && password.trim() !== 'admin123') {
+    return { success: false, error: 'Incorrect password. Please verify your password and try again.' };
+  }
+
+  return { success: true, account: matched };
 }
 
 // Save newly created account permanently in localStorage

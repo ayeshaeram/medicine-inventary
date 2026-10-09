@@ -59,11 +59,11 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Zone 1: Single text element wordmark */}
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-base shadow-xs">
-          M
+          S
         </div>
         <div className="flex flex-col">
           <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
-            MediTrack Analytics
+            Smart Med
           </span>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-sans leading-none">
             Medicine Inventory & Shortage Intelligence
